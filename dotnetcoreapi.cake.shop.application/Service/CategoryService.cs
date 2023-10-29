@@ -17,7 +17,7 @@ namespace dotnetcoreapi.cake.shop.application
         // Get all categories response DTO
         public async Task<List<CategoryResponseDto>> GetAllCategories(int? limit = null)
         {
-            var allCategoriesQuery = _categoryRepository.GetAllCategories();
+            var allCategoriesQuery = _categoryRepository.GetAllEntities();
 
             // Get limit categories
             if(limit.HasValue)
@@ -34,7 +34,7 @@ namespace dotnetcoreapi.cake.shop.application
         // Get category response DTO
         public async Task<CategoryResponseDto> GetCategoryById(int categoryId)
         {
-            var category = await _categoryRepository.GetCategoryById(categoryId);
+            var category = await _categoryRepository.GetEntityByIdAsync(categoryId);
 
             var categoryResponseDto = _mapper.Map<CategoryResponseDto>(category);
             return categoryResponseDto;
@@ -46,7 +46,7 @@ namespace dotnetcoreapi.cake.shop.application
             var newCategory = _mapper.Map<Category>(categoryRequestDto);
             newCategory.CreateAt = DateTime.UtcNow;
 
-            var createdCategory = await _categoryRepository.CreateCategory(newCategory);
+            var createdCategory = await _categoryRepository.CreateEntityAsync(newCategory);
 
             var createdCategoryResponseDto = _mapper.Map<CategoryResponseDto>(createdCategory);
             return createdCategoryResponseDto;
@@ -55,7 +55,7 @@ namespace dotnetcoreapi.cake.shop.application
         // Update category
         public async Task<CategoryResponseDto> UpdateCategory(int id, CategoryRequestDto categoryRequestDto)
         {
-            var existCategory = await _categoryRepository.GetCategoryById(id);
+            var existCategory = await _categoryRepository.GetEntityByIdAsync(id);
 
             if (existCategory == null)
             {
@@ -63,7 +63,7 @@ namespace dotnetcoreapi.cake.shop.application
             }
 
             _mapper.Map(categoryRequestDto, existCategory);
-            var updatedCategory = await _categoryRepository.UpdateCategory(existCategory);
+            var updatedCategory = await _categoryRepository.UpdateEntityAsync(existCategory);
 
             var updatedCategoryResponseDto = _mapper.Map<CategoryResponseDto>(updatedCategory);
             return updatedCategoryResponseDto;
@@ -72,14 +72,14 @@ namespace dotnetcoreapi.cake.shop.application
         // Delete category
         public async Task<CategoryResponseDto> DeleteCategory(int categoryId)
         {
-            var category = await _categoryRepository.GetCategoryById(categoryId);
+            var category = await _categoryRepository.GetEntityByIdAsync(categoryId);
 
             if (category == null)
             {
                 throw new Exception("category not found");
             }
 
-            var deletedCategory = await _categoryRepository.DeleteCategory(category);
+            var deletedCategory = await _categoryRepository.DeleteEntityAsync(category);
 
             var deletedCategoryResponseDto = _mapper.Map<CategoryResponseDto>(deletedCategory);
             return deletedCategoryResponseDto;
