@@ -1,6 +1,6 @@
-using dotnetcoreapi_cake_shop.Data;
-using dotnetcoreapi_cake_shop.Repositories;
-using dotnetcoreapi_cake_shop.Services;
+using dotnetcoreapi.cake.shop.domain;
+using dotnetcoreapi.cake.shop.infrastructure;
+using dotnetcoreapi.cake.shop.application;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);

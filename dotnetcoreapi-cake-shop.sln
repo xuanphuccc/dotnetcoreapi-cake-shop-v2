@@ -5,6 +5,12 @@ VisualStudioVersion = 17.5.33516.290
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnetcoreapi-cake-shop", "dotnetcoreapi-cake-shop\dotnetcoreapi-cake-shop.csproj", "{B0B6C4E3-A5AF-4D8D-9C30-C4F634BDE9B1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnetcoreapi.cake.shop.domain", "dotnetcoreapi.cake.shop.domain\dotnetcoreapi.cake.shop.domain.csproj", "{2FF48BAE-FA5F-45CA-9131-73BA58E1B414}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnetcoreapi.cake.shop.infrastructure", "dotnetcoreapi.cake.shop.infrastructure\dotnetcoreapi.cake.shop.infrastructure.csproj", "{7725074D-C0BC-4931-AEB8-330D424B25D2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnetcoreapi.cake.shop.application", "dotnetcoreapi.cake.shop.application\dotnetcoreapi.cake.shop.application.csproj", "{8754C1FC-7A52-48C4-B18F-9239DD93636E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +21,18 @@ Global
 		{B0B6C4E3-A5AF-4D8D-9C30-C4F634BDE9B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B0B6C4E3-A5AF-4D8D-9C30-C4F634BDE9B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B0B6C4E3-A5AF-4D8D-9C30-C4F634BDE9B1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2FF48BAE-FA5F-45CA-9131-73BA58E1B414}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2FF48BAE-FA5F-45CA-9131-73BA58E1B414}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2FF48BAE-FA5F-45CA-9131-73BA58E1B414}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2FF48BAE-FA5F-45CA-9131-73BA58E1B414}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7725074D-C0BC-4931-AEB8-330D424B25D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7725074D-C0BC-4931-AEB8-330D424B25D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7725074D-C0BC-4931-AEB8-330D424B25D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7725074D-C0BC-4931-AEB8-330D424B25D2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8754C1FC-7A52-48C4-B18F-9239DD93636E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8754C1FC-7A52-48C4-B18F-9239DD93636E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8754C1FC-7A52-48C4-B18F-9239DD93636E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8754C1FC-7A52-48C4-B18F-9239DD93636E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

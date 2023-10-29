@@ -1,9 +1,8 @@
-﻿using dotnetcoreapi_cake_shop.Dtos;
-using dotnetcoreapi_cake_shop.Services;
+﻿using dotnetcoreapi.cake.shop.application;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace dotnetcoreapi_cake_shop.Controllers
+namespace dotnetcoreapi.cake.shop
 {
     [Route("api/[controller]")]
     [ApiController]
