@@ -1,21 +1,13 @@
 ﻿
 namespace dotnetcoreapi.cake.shop.application
 {
-    public interface ICategoryService
+    public interface ICategoryService : IBaseService<CategoryDto, CategoryRequestDto, CategoryRequestDto>
     {
-        // Get all categories response DTO
-        Task<List<CategoryResponseDto>> GetAllCategories(int? limit = null);
-
-        // Get category response DTO
-        Task<CategoryResponseDto> GetCategoryById(int categoryId);
-
-        // Create category
-        Task<CategoryResponseDto> CreateCategory(CategoryRequestDto categoryRequestDto);
-
-        // Update category
-        Task<CategoryResponseDto> UpdateCategory(int id, CategoryRequestDto categoryRequestDto);
-
-        // Delete category
-        Task<CategoryResponseDto> DeleteCategory(int categoryId);
+        /// <summary>
+        /// Filter
+        /// </summary>
+        /// <param name="limit">Giới hạn bản ghi</param>
+        /// <returns></returns>
+        Task<List<CategoryDto>> FilterAsync(int? limit = null);
     }
 }

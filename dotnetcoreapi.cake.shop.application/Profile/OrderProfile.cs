@@ -6,9 +6,8 @@ namespace dotnetcoreapi.cake.shop.application
     public class OrderProfile : Profile
     {
         public OrderProfile() {
-            CreateMap<Order, OrderResponseDto>();
-            CreateMap<OrderItem, OrderItemResponseDto>();
-            CreateMap<OrderStatus, OrderStatusResponseDto>();
+            CreateMap<Order, OrderDto>();
+            CreateMap<OrderItem, OrderItemDto>();
 
             CreateMap<OrderRequestDto, Order>()
                 .ForMember(

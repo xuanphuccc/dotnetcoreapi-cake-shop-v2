@@ -3,16 +3,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace dotnetcoreapi.cake.shop.infrastructure
 {
-    public class ProductRepository : IProductRepository
+    public class ProductRepository : BaseRepository<Product>, IProductRepository
     {
-        private readonly CakeShopContext _context;
-        public ProductRepository(CakeShopContext context)
+        public ProductRepository(CakeShopContext context) : base(context)
         {
-            _context = context;
         }
 
-        // Get all products
-        public IQueryable<Product> GetAllProducts()
+        /// <summary>
+        /// Lấy toàn bộ danh sách
+        /// </summary>
+        /// <returns></returns>
+        public override IQueryable<Product> GetAllEntities()
         {
             var allProducts = _context.Products
                                 .Include(p => p.Category)
@@ -22,57 +23,36 @@ namespace dotnetcoreapi.cake.shop.infrastructure
             return allProducts;
         }
 
-        // Get product by id
-        public async Task<Product> GetProductById(int productId)
+        /// <summary>
+        /// Lấy một sản phẩm theo ID
+        /// </summary>
+        /// <param name="productId">ID của sản phẩm</param>
+        /// <returns></returns>
+        public override async Task<Product> GetEntityByIdAsync(int productId)
         {
             var product = await _context.Products
                                 .Include(p => p.Category)
                                 .Include(p => p.Images)
                                 .FirstOrDefaultAsync(p => p.ProductId == productId);
 
-            return product!;
-        }
-
-        // Create product
-        public async Task<Product> CreateProduct(Product product)
-        {
-            await _context.Products.AddAsync(product);
-            var result = await _context.SaveChangesAsync();
-
-            if (result == 0)
+            if (product == null)
             {
-                throw new Exception("cannot create product");
+                throw new NotFoundException("Sản phẩm không tồn tại", ErrorCode.NotFound);
             }
 
             return product;
         }
 
-        // Update product
-        public async Task<Product> UpdateProduct(Product product)
+        /// <summary>
+        /// Kiểm tra một sản phẩm đã từng được bán chưa
+        /// </summary>
+        /// <param name="productId">ID sản phẩm</param>
+        /// <returns></returns>
+        public async Task<int> HasOrders(int productId)
         {
-            _context.Products.Update(product);
-            var result = await _context.SaveChangesAsync();
+            var hasOrders = await _context.OrderItems.CountAsync(oi => oi.ProductId == productId);
 
-            if (result == 0)
-            {
-                throw new Exception("not modified");
-            }
-
-            return product;
-        }
-
-        // Delete product
-        public async Task<Product> DeleteProduct(Product product)
-        {
-            _context.Products.Remove(product);
-            var result = await _context.SaveChangesAsync();
-
-            if (result == 0)
-            {
-                throw new Exception("cannot delete product");
-            }
-
-            return product;
+            return hasOrders;
         }
     }
 }

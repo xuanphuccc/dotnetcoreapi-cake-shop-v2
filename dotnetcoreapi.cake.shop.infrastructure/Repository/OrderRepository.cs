@@ -3,86 +3,29 @@ using Microsoft.EntityFrameworkCore;
 
 namespace dotnetcoreapi.cake.shop.infrastructure
 {
-    public class OrderRepository : IOrderRepository
+    public class OrderRepository : BaseRepository<Order>, IOrderRepository
     {
-        private readonly CakeShopContext _context;
-        public OrderRepository(CakeShopContext context)
+        public OrderRepository(CakeShopContext context) : base(context)
         {
-            _context = context;
         }
 
-        // Get all orders
-        public IQueryable<Order> GetAllOrders()
-        {
-            var allOrders = _context.Orders
-                                .Include(o => o.ShippingMethod)
-                                .Include(o => o.OrderStatus)
-                                .Include(o => o.Items)
-                                    .ThenInclude(item => item.Product)
-                                    .ThenInclude(product => product.Images)
-                                .AsQueryable();
-            return allOrders;
-        }
-
-        // Get order by id
-        public async Task<Order> GetOrderById(int orderId)
+        /// <summary>
+        /// Lấy một bản ghi theo ID
+        /// </summary>
+        /// <param name="orderId">ID của bản ghi</param>
+        /// <returns></returns>
+        public override async Task<Order> GetEntityByIdAsync(int orderId)
         {
             var order = await _context.Orders
                                 .Include(o => o.ShippingMethod)
-                                .Include(o => o.OrderStatus)
                                 .Include(o => o.Items)
                                     .ThenInclude(item => item.Product)
                                     .ThenInclude(product => product.Images)
                                 .FirstOrDefaultAsync(o => o.OrderId == orderId);
 
-            return order!;
-        }
-
-        // Check product has orders or not
-        public async Task<int> HasOrders(int productId)
-        {
-            var hasOrders = await _context.OrderItems.CountAsync(oi => oi.ProductId == productId);
-
-            return hasOrders;
-        }
-
-        // Create order
-        public async Task<Order> CreateOrder(Order order)
-        {
-            await _context.Orders.AddAsync(order);
-            var result = await _context.SaveChangesAsync();
-
-            if (result == 0)
+            if (order == null)
             {
-                throw new Exception("cannot create order");
-            }
-
-            return order;
-        }
-
-        // Update order
-        public async Task<Order> UpdateOrder(Order order)
-        {
-            _context.Orders.Update(order);
-            var reusult = await _context.SaveChangesAsync();
-
-            if (reusult == 0)
-            {
-                throw new Exception("not modified");
-            }
-
-            return order;
-        }
-
-        // Delete order
-        public async Task<Order> DeleteOrder(Order order)
-        {
-            _context.Orders.Remove(order);
-            var result = await _context.SaveChangesAsync();
-
-            if (result == 0)
-            {
-                throw new Exception("cannot delete order");
+                throw new NotFoundException("Đơn hàng không tồn tại", ErrorCode.NotFound);
             }
 
             return order;

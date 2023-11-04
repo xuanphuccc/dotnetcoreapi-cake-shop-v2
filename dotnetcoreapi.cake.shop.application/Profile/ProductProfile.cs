@@ -7,13 +7,13 @@ namespace dotnetcoreapi.cake.shop.application
     {
         public ProductProfile()
         {
-            CreateMap<Product, ProductResponseDto>();
+            CreateMap<Product, ProductDto>();
             CreateMap<ProductRequestDto, Product>()
                 .ForMember(
                     dest => dest.CreateAt,
                     opt => opt.Ignore()
                  );
-            CreateMap<ProductImage, ProductImageResponseDto>();
+            CreateMap<ProductImage, ProductImageDto>();
             CreateMap<ProductImageRequestDto, ProductImage>();
         }
     }

@@ -2,7 +2,7 @@
 
 namespace dotnetcoreapi.cake.shop.application
 {
-    public class CategoryResponseDto
+    public class CategoryDto
     {
         public int CategoryId { get; set; }
 

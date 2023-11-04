@@ -17,7 +17,7 @@ namespace dotnetcoreapi.cake.shop
         [HttpGet]
         public async Task<IActionResult> GetAllShippingMethods()
         {
-            var allShippingMethodResponseDtos = await _shippingMethodService.GetAllShippingMethods();
+            var allShippingMethodResponseDtos = await _shippingMethodService.GetAllEntitiesAsync();
 
             return Ok(new ResponseDto()
             {
@@ -33,7 +33,7 @@ namespace dotnetcoreapi.cake.shop
                 return BadRequest(new ResponseDto() { Status = 400, Title = "shippingMethodId is required" });
             }
 
-            var shippingMethodResponseDto = await _shippingMethodService.GetShippingMethodById(id.Value);
+            var shippingMethodResponseDto = await _shippingMethodService.GetEntityByIdAsync(id.Value);
             if (shippingMethodResponseDto == null)
             {
                 return NotFound(new ResponseDto() { Status = 404, Title = "shipping method not found" });
@@ -70,7 +70,7 @@ namespace dotnetcoreapi.cake.shop
 
             try
             {
-                var createdShippingMethodResponseDto = await _shippingMethodService.CreateShippingMethod(shippingMethodRequestDto);
+                var createdShippingMethodResponseDto = await _shippingMethodService.CreateEntityAsync(shippingMethodRequestDto);
 
                 return CreatedAtAction(
                             nameof(GetShippingMethodById),
@@ -101,7 +101,7 @@ namespace dotnetcoreapi.cake.shop
 
             try
             {
-                var updatedShippingMethodResponseDto = await _shippingMethodService.UpdateShippingMethod(id.Value, shippingMethodRequestDto);
+                var updatedShippingMethodResponseDto = await _shippingMethodService.UpdateEntityAsync(id.Value, shippingMethodRequestDto);
 
                 return Ok(new ResponseDto()
                 {
@@ -127,7 +127,7 @@ namespace dotnetcoreapi.cake.shop
 
             try
             {
-                var deletedShippingMethodResponseDto = await _shippingMethodService.DeleteShippingMethod(id.Value);
+                var deletedShippingMethodResponseDto = await _shippingMethodService.DeleteEntityAsync(id.Value);
 
                 return Ok(new ResponseDto()
                 {

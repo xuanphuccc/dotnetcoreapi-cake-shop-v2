@@ -4,53 +4,36 @@ using Microsoft.EntityFrameworkCore;
 
 namespace dotnetcoreapi.cake.shop.application
 {
-    public class ShippingMethodService : IShippingMethodService
+    public class ShippingMethodService : BaseService<ShippingMethod, ShippingMethodDto, ShippingMethodRequestDto, ShippingMethodRequestDto>, IShippingMethodService
     {
         private readonly IShippingMethodRepository _shippingMethodRepository;
-        private readonly IMapper _mapper;
-        public ShippingMethodService(
-            IShippingMethodRepository shippingMethodRepository,
-            IMapper mapper)
+
+        public ShippingMethodService(IShippingMethodRepository shippingMethodRepository, IMapper mapper) : base(shippingMethodRepository, mapper)
         {
             _shippingMethodRepository = shippingMethodRepository;
-            _mapper = mapper;
         }
 
-
-        // Get all shipping methods
-        public async Task<List<ShippingMethodResponseDto>> GetAllShippingMethods()
-        {
-            var allShippingMethods = await _shippingMethodRepository
-                                            .GetAllShippingMethods()
-                                            .ToListAsync();
-
-            var allShippingMethodResponseDto = _mapper.Map<List<ShippingMethodResponseDto>>(allShippingMethods);
-            return allShippingMethodResponseDto;
-        }
-
-        // Get default shipping method
-        public async Task<ShippingMethodResponseDto> GetDefaultShippingMethod()
+        /// <summary>
+        /// Lấy đơn vị vận chuyển mặc định
+        /// </summary>
+        /// <returns></returns>
+        public async Task<ShippingMethodDto> GetDefaultShippingMethod()
         {
             var defaultShippingMethod = (await _shippingMethodRepository
-                                        .GetDefaultShippingMethods()).FirstOrDefault();
+                                        .GetDefaultShippingMethodsAsync()).FirstOrDefault();
 
-            var defaultShippingMethodResponseDto = _mapper.Map<ShippingMethodResponseDto>(defaultShippingMethod);
+            var defaultShippingMethodResponseDto = _mapper.Map<ShippingMethodDto>(defaultShippingMethod);
             return defaultShippingMethodResponseDto;
         }
 
-        // Get shipping method by ID
-        public async Task<ShippingMethodResponseDto> GetShippingMethodById(int shippingMethodId)
+        /// <summary>
+        /// Map DTO sang entity để thêm bản ghi
+        /// </summary>
+        /// <param name="entityCreateDto">Đối tượng cần map</param>
+        /// <returns></returns>
+        protected override async Task<ShippingMethod> MapCreateAsync(ShippingMethodRequestDto entityCreateDto)
         {
-            var shippingMethod = await _shippingMethodRepository.GetShippingMethodById(shippingMethodId);
-
-            var shippingMethodResponseDto = _mapper.Map<ShippingMethodResponseDto>(shippingMethod);
-            return shippingMethodResponseDto;
-        }
-
-        // Create shipping method
-        public async Task<ShippingMethodResponseDto> CreateShippingMethod(ShippingMethodRequestDto shippingMethodRequestDto)
-        {
-            var newShippingMethod = _mapper.Map<ShippingMethod>(shippingMethodRequestDto);
+            var newShippingMethod = _mapper.Map<ShippingMethod>(entityCreateDto);
             newShippingMethod.CreateAt = DateTime.UtcNow;
 
             if (newShippingMethod.IsDefault == true)
@@ -59,23 +42,19 @@ namespace dotnetcoreapi.cake.shop.application
                 await UpdateOldDefaultShippingMethods();
             }
 
-            var createdShippingMethod = await _shippingMethodRepository.CreateShippingMethod(newShippingMethod);
-
-            var createdShippingMethodResponseDto = _mapper.Map<ShippingMethodResponseDto>(createdShippingMethod);
-            return createdShippingMethodResponseDto;
+            return newShippingMethod;
         }
 
-        // Update shipping method
-        public async Task<ShippingMethodResponseDto> UpdateShippingMethod(int id, ShippingMethodRequestDto shippingMethodRequestDto)
+        /// <summary>
+        /// Map DTO sang entity để cập nhật bản ghi
+        /// </summary>
+        /// <param name="entityUpdateDto">Đối tượng cần map</param>
+        /// <returns></returns>
+        protected override async Task<ShippingMethod> MapUpdateAsync(int entityId, ShippingMethodRequestDto entityUpdateDto)
         {
-            var existShippingMethod = await _shippingMethodRepository.GetShippingMethodById(id);
+            var existShippingMethod = await _shippingMethodRepository.GetEntityByIdAsync(entityId);
 
-            if (existShippingMethod == null)
-            {
-                throw new Exception("shipping method not found");
-            }
-
-            _mapper.Map(shippingMethodRequestDto, existShippingMethod);
+            _mapper.Map(entityUpdateDto, existShippingMethod);
 
             if (existShippingMethod.IsDefault == true)
             {
@@ -83,60 +62,53 @@ namespace dotnetcoreapi.cake.shop.application
                 await UpdateOldDefaultShippingMethods();
             }
 
-            var updatedShippingMethod = await _shippingMethodRepository.UpdateShippingMethod(existShippingMethod);
-
-            var updatedShippingMethodResponseDto = _mapper.Map<ShippingMethodResponseDto>(updatedShippingMethod);
-            return updatedShippingMethodResponseDto;
+            return existShippingMethod;
         }
 
-        // Delete shipping method
-        public async Task<ShippingMethodResponseDto> DeleteShippingMethod(int shippingMethodId)
+        /// <summary>
+        /// Thực hiện hành động sau khi xoá
+        /// </summary>
+        /// <param name="deletedEntity">Đối tượng đã xoá</param>
+        /// <returns></returns>
+        protected override async Task AfterDeleteAsync(ShippingMethod deletedEntity)
         {
-            var existShippingMethod = await _shippingMethodRepository.GetShippingMethodById(shippingMethodId);
-
-            if (existShippingMethod == null)
-            {
-                throw new Exception("shipping method not found");
-            }
-
-            var deletedShippingMethod = await _shippingMethodRepository.DeleteShippingMethod(existShippingMethod);
-
-            // Check exist default shipping method
-            if (deletedShippingMethod.IsDefault == true)
+            // Nếu xoá phương thức vận chuyển mặc định
+            // Thì chuyển phương thức vận chuyển đầu tiên thành mặc định
+            if (deletedEntity.IsDefault == true)
             {
                 await ChangeDefaultShippingMethod();
             }
-
-            var deletedShippingMethodResponseDto = _mapper.Map<ShippingMethodResponseDto>(deletedShippingMethod);
-            return deletedShippingMethodResponseDto;
         }
 
-
-        // Update old default shipping methods to 'false'
+        /// <summary>
+        /// Bỏ mặc định phương thức vận chuyển mặc định trước đó
+        /// </summary>
+        /// <returns></returns>
         private async Task UpdateOldDefaultShippingMethods()
         {
-            var defaultShippingMethods = await _shippingMethodRepository.GetDefaultShippingMethods();
+            var defaultShippingMethods = await _shippingMethodRepository.GetDefaultShippingMethodsAsync();
 
-            defaultShippingMethods.ForEach(s =>
+            defaultShippingMethods.ForEach(sm =>
             {
-                s.IsDefault = false;
+                sm.IsDefault = false;
             });
 
-            await _shippingMethodRepository.UpdateShippingMethods(defaultShippingMethods);
+            await _shippingMethodRepository.UpdateShippingMethodsAsync(defaultShippingMethods);
         }
 
-        // Change default shipping method
+        /// <summary>
+        /// Chuyển phương thức vận chuyển đầu tiên thành mặc định
+        /// </summary>
+        /// <returns></returns>
         private async Task ChangeDefaultShippingMethod()
         {
-            var firstShippingMethod = await _shippingMethodRepository
-                                            .GetAllShippingMethods()
-                                            .FirstOrDefaultAsync();
+            var firstShippingMethod = await _shippingMethodRepository.GetAllEntities().FirstOrDefaultAsync();
 
             if (firstShippingMethod != null)
             {
                 firstShippingMethod.IsDefault = true;
 
-                await _shippingMethodRepository.UpdateShippingMethod(firstShippingMethod);
+                await _shippingMethodRepository.UpdateEntityAsync(firstShippingMethod);
             }
         }
     }

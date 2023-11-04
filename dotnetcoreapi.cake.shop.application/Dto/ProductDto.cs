@@ -2,7 +2,7 @@
 
 namespace dotnetcoreapi.cake.shop.application
 {
-    public class ProductResponseDto
+    public class ProductDto
     {
         public int ProductId { get; set; }
 
@@ -39,8 +39,8 @@ namespace dotnetcoreapi.cake.shop.application
 
         public DateTime? CreateAt { get; set; }
 
-        public CategoryResponseDto? Category { get; set; }
+        public CategoryDto? Category { get; set; }
 
-        public List<ProductImageResponseDto>? Images { get; set; }
+        public List<ProductImageDto>? Images { get; set; }
     }
 }

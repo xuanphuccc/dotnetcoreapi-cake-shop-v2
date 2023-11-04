@@ -26,7 +26,7 @@ namespace dotnetcoreapi.cake.shop
             [FromQuery] string? sort,
             [FromQuery] string? search)
         {
-            var allProductResponseDtos = await _productService.GetAllProducts(category, pageSize, page, sort, search);
+            var allProductResponseDtos = await _productService.FilterAsync(category, pageSize, page, sort, search);
 
             return Ok(allProductResponseDtos);
         }
@@ -39,7 +39,7 @@ namespace dotnetcoreapi.cake.shop
                 return BadRequest(new ResponseDto() { Status = 400, Title = "productId is required" });
             }
 
-            var productResponseDto = await _productService.GetProductById(id.Value);
+            var productResponseDto = await _productService.GetEntityByIdAsync(id.Value);
             if (productResponseDto == null)
             {
                 return NotFound(new ResponseDto() { Status = 404, Title = "product not found" });
@@ -62,7 +62,7 @@ namespace dotnetcoreapi.cake.shop
             // Check exist category
             if (productRequestDto.CategoryId != null)
             {
-                var existCategory = await _categoryService.GetCategoryById(productRequestDto.CategoryId.Value);
+                var existCategory = await _categoryService.GetEntityByIdAsync(productRequestDto.CategoryId.Value);
                 if (existCategory == null)
                 {
                     return BadRequest(new ResponseDto() { Status = 400, Title = "category not found" });
@@ -72,7 +72,7 @@ namespace dotnetcoreapi.cake.shop
             try
             {
                 // Create product
-                var createdProductResponseDto = await _productService.CreateProduct(productRequestDto);
+                var createdProductResponseDto = await _productService.CreateEntityAsync(productRequestDto);
 
                 return CreatedAtAction(
                     nameof(GetProductById),
@@ -104,7 +104,7 @@ namespace dotnetcoreapi.cake.shop
             // Check exist category
             if (productRequestDto.CategoryId != null)
             {
-                var existCategory = await _categoryService.GetCategoryById(productRequestDto.CategoryId.Value);
+                var existCategory = await _categoryService.GetEntityByIdAsync(productRequestDto.CategoryId.Value);
                 if (existCategory == null)
                 {
                     return BadRequest(new ResponseDto() { Status = 400, Title = "category not found" });
@@ -114,7 +114,7 @@ namespace dotnetcoreapi.cake.shop
             try
             {
                 // Update product
-                var updatedProductResponseDto = await _productService.UpdateProduct(id.Value, productRequestDto);
+                var updatedProductResponseDto = await _productService.UpdateEntityAsync(id.Value, productRequestDto);
 
                 return Ok(new ResponseDto()
                 {
@@ -141,7 +141,7 @@ namespace dotnetcoreapi.cake.shop
             try
             {
                 // Delete product
-                var deletedProductResponseDto = await _productService.DeleteProduct(id.Value);
+                var deletedProductResponseDto = await _productService.DeleteEntityAsync(id.Value);
 
                 return Ok(new ResponseDto()
                 {

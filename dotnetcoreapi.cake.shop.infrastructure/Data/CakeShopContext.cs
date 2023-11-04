@@ -35,10 +35,6 @@ namespace dotnetcoreapi.cake.shop.infrastructure
 
             modelBuilder.Entity<Order>(entity =>
             {
-                entity.HasOne(o => o.OrderStatus)
-                      .WithMany(os => os.Orders)
-                      .OnDelete(DeleteBehavior.SetNull);
-
                 entity.HasOne(o => o.ShippingMethod)
                       .WithMany(sm => sm.Orders)
                       .OnDelete(DeleteBehavior.SetNull);
@@ -62,7 +58,6 @@ namespace dotnetcoreapi.cake.shop.infrastructure
         public DbSet<Category> Categories { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<ProductImage> ProductImages { get; set; }
-        public DbSet<OrderStatus> OrderStatuses { get; set; }
         public DbSet<ShippingMethod> ShippingMethods { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }

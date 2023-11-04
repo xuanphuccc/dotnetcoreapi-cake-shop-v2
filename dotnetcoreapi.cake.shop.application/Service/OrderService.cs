@@ -4,38 +4,33 @@ using Microsoft.EntityFrameworkCore;
 
 namespace dotnetcoreapi.cake.shop.application
 {
-    public class OrderService : IOrderService
+    public class OrderService : BaseService<Order, OrderDto, OrderRequestDto, OrderRequestDto>, IOrderService
     {
         private readonly IOrderRepository _orderRepository;
         private readonly IProductRepository _productRepository;
         private readonly IShippingMethodRepository _shippingMethodRepository;
-        private readonly IOrderStatusRepository _orderStatusRepository;
-        private readonly IMapper _mapper;
 
         public OrderService(
             IOrderRepository orderRepository,
-            IOrderStatusRepository orderStatusRepository,
             IProductRepository productRepository,
             IShippingMethodRepository shippingMethodRepository,
-            IMapper mapper)
+            IMapper mapper) : base(orderRepository, mapper)
         {
             _orderRepository = orderRepository;
             _productRepository = productRepository;
             _shippingMethodRepository = shippingMethodRepository;
-            _orderStatusRepository = orderStatusRepository;
-            _mapper = mapper;
         }
 
 
         // Get all orders response DTO
-        public async Task<ResponseDto> GetAllOrders(
+        public async Task<ResponseDto> FilterAsync(
             int? status = null,
             int? pageSize = null,
             int? page = null,
             string? sort = null,
             string? search = null)
         {
-            var allOrdersQuery = _orderRepository.GetAllOrders();
+            var allOrdersQuery = _orderRepository.GetAllEntities();
 
             // Status filter
             if(status.HasValue)
@@ -84,7 +79,7 @@ namespace dotnetcoreapi.cake.shop.application
             }
 
             var allOrders = await allOrdersQuery.ToListAsync();
-            var allOrderResponseDtos = _mapper.Map<List<OrderResponseDto>>(allOrders);
+            var allOrderResponseDtos = _mapper.Map<List<OrderDto>>(allOrders);
 
             return new ResponseDto()
             {
@@ -93,17 +88,12 @@ namespace dotnetcoreapi.cake.shop.application
             };
         }
 
-        // Get order response DTO
-        public async Task<OrderResponseDto> GetOrderById(int orderId)
-        {
-            var order = await _orderRepository.GetOrderById(orderId);
-
-            var orderResponseDto = _mapper.Map<OrderResponseDto>(order);
-            return orderResponseDto;
-        }
-
-        // Create order
-        public async Task<OrderResponseDto> CreateOrder(OrderRequestDto orderRequestDto)
+        /// <summary>
+        /// Map DTO sang entity để thêm bản ghi
+        /// </summary>
+        /// <param name="entityCreateDto">Đối tượng cần map</param>
+        /// <returns></returns>
+        protected override async Task<Order> MapCreateAsync(OrderRequestDto orderRequestDto)
         {
             var newOrder = _mapper.Map<Order>(orderRequestDto);
 
@@ -119,7 +109,7 @@ namespace dotnetcoreapi.cake.shop.application
                     if (orderItem.ProductId.HasValue)
                     {
                         // Get origin product
-                        var product = await _productRepository.GetProductById(orderItem.ProductId.Value);
+                        var product = await _productRepository.GetEntityByIdAsync(orderItem.ProductId.Value);
 
                         orderItem.Price = product.Price;
 
@@ -128,23 +118,12 @@ namespace dotnetcoreapi.cake.shop.application
                 }
             }
 
-            // Get order status
-            OrderStatus createdStatus = await _orderStatusRepository.GetOrderStatusByStatus("created");
-
-            if (createdStatus == null)
-            {
-                // If 'created' status does not exist -> create new 'created' status
-                createdStatus = await CreateOrderStatus("Đã tạo đơn hàng", "created");
-            }
-
-            newOrder.OrderStatusId = createdStatus.OrderStatusId;
+            newOrder.OrderStatusId = (int)EOrderStatus.Created;
 
             // Get shipping method and shipping fee
             decimal shippingFee = 0;
 
-            var defaultShippingMethod = (await _shippingMethodRepository
-                                                .GetDefaultShippingMethods())
-                                                .FirstOrDefault();
+            var defaultShippingMethod = (await _shippingMethodRepository.GetDefaultShippingMethodsAsync()).FirstOrDefault();
             if (defaultShippingMethod != null)
             {
                 newOrder.ShippingMethodId = defaultShippingMethod.ShippingMethodId;
@@ -172,127 +151,72 @@ namespace dotnetcoreapi.cake.shop.application
             // Get order total
             newOrder.OrderTotal = totalItemsPrice + shippingFee;
 
-            // Create order
-            var createdOrder = await _orderRepository.CreateOrder(newOrder);
-
-            var createdOrderResponseDto = _mapper.Map<OrderResponseDto>(createdOrder);
-            return createdOrderResponseDto;
+            return newOrder;
         }
 
-        // Update order status
-        // Delivery
-        public async Task<OrderResponseDto> DeliveryOrder(int orderId)
+        /// <summary>
+        /// Map DTO sang entity để cập nhật bản ghi
+        /// </summary>
+        /// <param name="entityUpdateDto">Đối tượng cần map</param>
+        /// <returns></returns>
+        protected override async Task<Order> MapUpdateAsync(int entityId, OrderRequestDto entityUpdateDto)
         {
-            var existOrder = await _orderRepository.GetOrderById(orderId);
+            var existOrder = await _orderRepository.GetEntityByIdAsync(entityId);
 
-            if (existOrder == null)
-            {
+            _mapper.Map(entityUpdateDto, existOrder);
 
-                throw new Exception("order not found");
-            }
+            return existOrder;
+        }
 
-            // Get order status
-            OrderStatus deliveryStatus = await _orderStatusRepository.GetOrderStatusByStatus("delivery");
+        /// <summary>
+        /// Chuyển trạng thái sang Đang vận chuyển
+        /// </summary>
+        /// <param name="orderId">ID đơn hàng</param>
+        /// <returns></returns>
+        public async Task<OrderDto> DeliveryOrder(int orderId)
+        {
+            var existOrder = await _orderRepository.GetEntityByIdAsync(orderId);
 
-            if (deliveryStatus == null)
-            {
-                // If 'delivery' status does not exist -> create new 'delivery' status
-                deliveryStatus = await CreateOrderStatus("Đang giao hàng", "delivery");
-            }
+            existOrder.OrderStatusId = (int)EOrderStatus.Delivery;
 
-            // Update new order status
-            existOrder.OrderStatusId = deliveryStatus.OrderStatusId;
-            var updatedOrder = await _orderRepository.UpdateOrder(existOrder);
+            var updatedOrder = await _orderRepository.UpdateEntityAsync(existOrder);
 
-            var updatedOrderResponseDto = _mapper.Map<OrderResponseDto>(updatedOrder);
+            var updatedOrderResponseDto = _mapper.Map<OrderDto>(updatedOrder);
             return updatedOrderResponseDto;
         }
 
-        // Cancelled
-        public async Task<OrderResponseDto> CancelOrder(int orderId)
+        /// <summary>
+        /// Chuyển trạng thái sang Đã huỷ đơn hàng
+        /// </summary>
+        /// <param name="orderId">ID đơn hàng</param>
+        /// <returns></returns>
+        public async Task<OrderDto> CancelOrder(int orderId)
         {
-            var existOrder = await _orderRepository.GetOrderById(orderId);
+            var existOrder = await _orderRepository.GetEntityByIdAsync(orderId);
 
-            if (existOrder == null)
-            {
+            existOrder.OrderStatusId = (int)EOrderStatus.Cancelled;
 
-                throw new Exception("order not found");
-            }
+            var cancelledOrder = await _orderRepository.UpdateEntityAsync(existOrder);
 
-            // Get order status
-            OrderStatus deliveryStatus = await _orderStatusRepository.GetOrderStatusByStatus("cancelled");
-
-            if (deliveryStatus == null)
-            {
-                // If 'cancelled' status does not exist -> create new 'cancelled' status
-                deliveryStatus = await CreateOrderStatus("Đã huỷ đơn hàng", "cancelled");
-            }
-
-            // Update new order status
-            existOrder.OrderStatusId = deliveryStatus.OrderStatusId;
-            var cancelledOrder = await _orderRepository.UpdateOrder(existOrder);
-
-            var updatedOrderResponseDto = _mapper.Map<OrderResponseDto>(cancelledOrder);
+            var updatedOrderResponseDto = _mapper.Map<OrderDto>(cancelledOrder);
             return updatedOrderResponseDto;
         }
 
-        // Completed
-        public async Task<OrderResponseDto> SuccessOrder(int orderId)
+        /// <summary>
+        /// Chuyển trạng thái sang Đã hoàn thành
+        /// </summary>
+        /// <param name="orderId">ID đơn hàng</param>
+        /// <returns></returns>
+        public async Task<OrderDto> SuccessOrder(int orderId)
         {
-            var existOrder = await _orderRepository.GetOrderById(orderId);
+            var existOrder = await _orderRepository.GetEntityByIdAsync(orderId);
 
-            if (existOrder == null)
-            {
+            existOrder.OrderStatusId = (int)EOrderStatus.Completed;
 
-                throw new Exception("order not found");
-            }
+            var completedOrder = await _orderRepository.UpdateEntityAsync(existOrder);
 
-            // Get order status
-            OrderStatus deliveryStatus = await _orderStatusRepository.GetOrderStatusByStatus("completed");
-
-            if (deliveryStatus == null)
-            {
-                // If 'completed' status does not exist -> create new 'completed' status
-                deliveryStatus = await CreateOrderStatus("Đã hoàn thành", "completed");
-            }
-
-            // Update new order status
-            existOrder.OrderStatusId = deliveryStatus.OrderStatusId;
-            var completedOrder = await _orderRepository.UpdateOrder(existOrder);
-
-            var updatedOrderResponseDto = _mapper.Map<OrderResponseDto>(completedOrder);
+            var updatedOrderResponseDto = _mapper.Map<OrderDto>(completedOrder);
             return updatedOrderResponseDto;
-        }
-
-        // Delete order
-        public async Task<OrderResponseDto> DeleteOrder(int orderId)
-        {
-            var existOrder = await _orderRepository.GetOrderById(orderId);
-
-            if (existOrder == null)
-            {
-                throw new Exception("order not found");
-            }
-
-            var deletedOrder = await _orderRepository.DeleteOrder(existOrder);
-
-            var deletedOrderResponseDto = _mapper.Map<OrderResponseDto>(deletedOrder);
-            return deletedOrderResponseDto;
-        }
-
-
-        // Create order status
-        private async Task<OrderStatus> CreateOrderStatus(string name, string status)
-        {
-            var newStatus = new OrderStatus()
-            {
-                Name = name,
-                Status = status.ToLower(),
-            };
-
-            var createdOrderStatus = await _orderStatusRepository.CreateOrderStatus(newStatus);
-
-            return createdOrderStatus;
         }
     }
 }

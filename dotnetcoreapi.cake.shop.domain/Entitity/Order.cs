@@ -53,8 +53,6 @@ namespace dotnetcoreapi.cake.shop.domain
         public ShippingMethod? ShippingMethod { get; set; }
 
         public int? OrderStatusId { get; set; }
-        [ForeignKey("OrderStatusId")]
-        public OrderStatus? OrderStatus { get; set; }
 
         public List<OrderItem>? Items { get; set;}
     }

@@ -2,7 +2,7 @@
 
 namespace dotnetcoreapi.cake.shop.application
 {
-    public class OrderResponseDto
+    public class OrderDto
     {
         public int OrderId { get; set; }
 
@@ -45,10 +45,10 @@ namespace dotnetcoreapi.cake.shop.application
 
         public DateTime CreateAt { get; set; }
 
-        public ShippingMethodResponseDto? ShippingMethod { get; set; }
+        public ShippingMethodDto? ShippingMethod { get; set; }
 
-        public OrderStatusResponseDto? OrderStatus { get; set; }
+        public int? OrderStatusId { get; set; }
 
-        public List<OrderItemResponseDto>? Items { get; set; }
+        public List<OrderItemDto>? Items { get; set; }
     }
 }

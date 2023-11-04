@@ -4,45 +4,46 @@ using Microsoft.EntityFrameworkCore;
 
 namespace dotnetcoreapi.cake.shop.application
 {
-    public class ProductService : IProductService
+    public class ProductService : BaseService<Product, ProductDto, ProductRequestDto, ProductRequestDto>, IProductService
     {
         private readonly IProductRepository _productRepository;
-        private readonly IOrderRepository _orderRepository;
-        private readonly IMapper _mapper;
-        public ProductService(
-            IProductRepository productRepository,
-            IOrderRepository orderRepository,
-            IMapper mapper)
+        public ProductService(IProductRepository productRepository, IMapper mapper)
+            : base(productRepository, mapper)
         {
             _productRepository = productRepository;
-            _orderRepository = orderRepository;
-            _mapper = mapper;
         }
 
-
-        // Get all products response DTO
-        public async Task<ResponseDto> GetAllProducts(
+        /// <summary>
+        /// Tìm kiếm, phân trang, sắp xếp
+        /// </summary>
+        /// <param name="category">ID của danh mục</param>
+        /// <param name="pageSize">Kích thước trang</param>
+        /// <param name="page">Trang hiện tại</param>
+        /// <param name="sort">Kiểu sắp xếp</param>
+        /// <param name="search">Tìm kiếm</param>
+        /// <returns></returns>
+        public async Task<ResponseDto> FilterAsync(
             int? category = null,
             int? pageSize = null,
             int? page = null,
             string? sort = null,
             string? search = null)
         {
-            var allProductsQuery = _productRepository.GetAllProducts();
+            var allProductsQuery = _productRepository.GetAllEntities();
 
-            // Get products by category
+            // Lọc theo danh mục
             if (category.HasValue)
             {
                 allProductsQuery = allProductsQuery.Where(p => p.CategoryId == category.Value);
             }
 
-            // Search products
+            // Tìm kiếm
             if (!string.IsNullOrEmpty(search))
             {
                 allProductsQuery = allProductsQuery.Where(p => p.Name.ToLower().Contains(search.ToLower()));
             }
 
-            // Sort
+            // Sắp xếp
             if (!string.IsNullOrEmpty(sort))
             {
                 switch (sort)
@@ -64,7 +65,7 @@ namespace dotnetcoreapi.cake.shop.application
                 }
             }
 
-            // Paging
+            // Phân trang
             int totalPage = 1;
             if (pageSize.HasValue && page.HasValue)
             {
@@ -76,12 +77,12 @@ namespace dotnetcoreapi.cake.shop.application
             }
 
             var allProducts = await allProductsQuery.ToListAsync();
-            var allProductResponseDtos = _mapper.Map<List<ProductResponseDto>>(allProducts);
+            var allProductResponseDtos = _mapper.Map<List<ProductDto>>(allProducts);
 
-            // Check products has orders or not
+            // Lấy số đơn hàng đã bán của sản phẩm
             foreach (var productResponse in allProductResponseDtos)
             {
-                await CheckHasOrderProduct(productResponse);
+                productResponse.HasOrders = await _productRepository.HasOrders(productResponse.ProductId);
             }
 
             return new ResponseDto()
@@ -91,74 +92,46 @@ namespace dotnetcoreapi.cake.shop.application
             };
         }
 
-        // Get product response DTO
-        public async Task<ProductResponseDto> GetProductById(int productId)
+        /// <summary>
+        /// Map DTO sang entity để thêm bản ghi
+        /// </summary>
+        /// <param name="entityCreateDto">Đối tượng cần map</param>
+        /// <returns></returns>
+        protected override async Task<Product> MapCreateAsync(ProductRequestDto entityCreateDto)
         {
-            var product = await _productRepository.GetProductById(productId);
-
-            var productResponseDto = _mapper.Map<ProductResponseDto>(product);
-            await CheckHasOrderProduct(productResponseDto);
-
-            return productResponseDto;
-        }
-
-        // Create product
-        public async Task<ProductResponseDto> CreateProduct(ProductRequestDto productRequestDto)
-        {
-            var newProduct = _mapper.Map<Product>(productRequestDto);
+            var newProduct = _mapper.Map<Product>(entityCreateDto);
             newProduct.CreateAt = DateTime.UtcNow;
 
-            var createdProduct = await _productRepository.CreateProduct(newProduct);
-
-            var createdProductResponseDto = _mapper.Map<ProductResponseDto>(createdProduct);
-            return createdProductResponseDto;
+            return await Task.FromResult(newProduct);
         }
 
-        // Update product
-        public async Task<ProductResponseDto> UpdateProduct(int id, ProductRequestDto productRequestDto)
+        /// <summary>
+        /// Map DTO sang entity để cập nhật bản ghi
+        /// </summary>
+        /// <param name="entityUpdateDto">Đối tượng cần map</param>
+        /// <returns></returns>
+        protected override async Task<Product> MapUpdateAsync(int entityId, ProductRequestDto entityUpdateDto)
         {
-            var existProduct = await _productRepository.GetProductById(id);
+            var existProduct = await _productRepository.GetEntityByIdAsync(entityId);
 
-            if (existProduct == null)
-            {
-                throw new Exception("product not found");
-            }
+            _mapper.Map(entityUpdateDto, existProduct);
 
-            _mapper.Map(productRequestDto, existProduct);
-            var updatedProduct = await _productRepository.UpdateProduct(existProduct);
-
-            var updatedProductResponseDto = _mapper.Map<ProductResponseDto>(updatedProduct);
-            return updatedProductResponseDto;
+            return existProduct;
         }
 
-        // Delete product
-        public async Task<ProductResponseDto> DeleteProduct(int productId)
+        /// <summary>
+        /// Thực hiện hành động trước khi xoá
+        /// </summary>
+        /// <param name="deletedEntity">Đối tượng đã xoá</param>
+        /// <returns></returns>
+        protected override async Task BeforeDeleteAsync(Product product)
         {
-            var existProduct = await _productRepository.GetProductById(productId);
-
-            if (existProduct == null)
-            {
-                throw new Exception("product not found");
-            }
-
-            // Check product has orders or not
-            var hasOrders = await _orderRepository.HasOrders(productId);
+            // Check sản phẩm đã được đặt hàng chưa
+            var hasOrders = await _productRepository.HasOrders(product.ProductId);
             if (hasOrders > 0)
             {
-                throw new Exception("this product already  on order");
+                throw new ConstraintException("Không thể xoá sản phẩm đã được đặt hàng");
             }
-
-
-            var deletedProduct = await _productRepository.DeleteProduct(existProduct);
-
-            var deletedProductResponseDto = _mapper.Map<ProductResponseDto>(deletedProduct);
-            return deletedProductResponseDto;
-        }
-
-        // Check product has orders or not
-        private async Task CheckHasOrderProduct(ProductResponseDto productResponseDto)
-        {
-            productResponseDto.HasOrders = await _orderRepository.HasOrders(productResponseDto.ProductId);
         }
     }
 }

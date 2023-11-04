@@ -1,26 +1,25 @@
 ﻿
+using dotnetcoreapi.cake.shop.domain;
+
 namespace dotnetcoreapi.cake.shop.application
 {
-    public interface IProductService
+    public interface IProductService : IBaseService<ProductDto, ProductRequestDto, ProductRequestDto>
     {
-        // Get all products response DTO
-        Task<ResponseDto> GetAllProducts(
+
+        /// <summary>
+        /// Tìm kiếm, phân trang, sắp xếp
+        /// </summary>
+        /// <param name="category">ID của danh mục</param>
+        /// <param name="pageSize">Kích thước trang</param>
+        /// <param name="page">Trang hiện tại</param>
+        /// <param name="sort">Kiểu sắp xếp</param>
+        /// <param name="search">Tìm kiếm</param>
+        /// <returns></returns>
+        Task<ResponseDto> FilterAsync(
             int? category = null,
             int? pageSize = null,
             int? page = null,
             string? sort = null,
             string? search = null);
-
-        // Get product response DTO
-        Task<ProductResponseDto> GetProductById(int productId);
-
-        // Create product
-        Task<ProductResponseDto> CreateProduct(ProductRequestDto productRequestDto);
-
-        // Update product
-        Task<ProductResponseDto> UpdateProduct(int id, ProductRequestDto productRequestDto);
-
-        // Delete product
-        Task<ProductResponseDto> DeleteProduct(int productId);
     }
 }

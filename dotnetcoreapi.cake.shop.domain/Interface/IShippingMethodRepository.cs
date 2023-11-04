@@ -1,25 +1,19 @@
 ﻿
 namespace dotnetcoreapi.cake.shop.domain
 {
-    public interface IShippingMethodRepository
+    public interface IShippingMethodRepository : IBaseRepository<ShippingMethod>
     {
-        // Get all shipping methods
-        IQueryable<ShippingMethod> GetAllShippingMethods();
+        /// <summary>
+        /// Lấy đơn vị vận chuyển mặc định
+        /// </summary>
+        /// <returns></returns>
+        Task<List<ShippingMethod>> GetDefaultShippingMethodsAsync();
 
-        // Get default shipping methods
-        Task<List<ShippingMethod>> GetDefaultShippingMethods();
-
-        // Get shipping method by id
-        Task<ShippingMethod> GetShippingMethodById(int shippingMethodId);
-
-        // Create shipping method
-        Task<ShippingMethod> CreateShippingMethod(ShippingMethod shippingMethod);
-
-        // Update shipping method
-        Task<ShippingMethod> UpdateShippingMethod(ShippingMethod shippingMethod);
-        Task<List<ShippingMethod>> UpdateShippingMethods(List<ShippingMethod> shippingMethods);
-
-        // Delete shipping method
-        Task<ShippingMethod> DeleteShippingMethod(ShippingMethod shippingMethod);
+        /// <summary>
+        /// Cập nhật danh sách đơn vị vận chuyển
+        /// </summary>
+        /// <param name="shippingMethods">Danh sách bản ghi cần cập nhật</param>
+        /// <returns></returns>
+        Task<List<ShippingMethod>> UpdateShippingMethodsAsync(List<ShippingMethod> shippingMethods);
     }
 }

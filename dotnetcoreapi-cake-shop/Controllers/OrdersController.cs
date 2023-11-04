@@ -26,7 +26,7 @@ namespace dotnetcoreapi.cake.shop
             try
             {
                 // Get all orders
-                var allOrderResponseDtos = await _orderService.GetAllOrders(status, pageSize, page, sort, search);
+                var allOrderResponseDtos = await _orderService.FilterAsync(status, pageSize, page, sort, search);
 
                 return Ok(allOrderResponseDtos);
             }
@@ -50,7 +50,7 @@ namespace dotnetcoreapi.cake.shop
             try
             {
                 // Get order
-                var orderResponseDto = await _orderService.GetOrderById(id.Value);
+                var orderResponseDto = await _orderService.GetEntityByIdAsync(id.Value);
                 if (orderResponseDto == null)
                 {
                     return NotFound(new ResponseDto() { Status = 404, Title = "order not found" });
@@ -81,7 +81,7 @@ namespace dotnetcoreapi.cake.shop
             try
             {
                 // Create order
-                var createdOrderResponseDto = await _orderService.CreateOrder(orderRequestDto);
+                var createdOrderResponseDto = await _orderService.CreateEntityAsync(orderRequestDto);
 
                 return CreatedAtAction(
                     nameof(GetOrder),

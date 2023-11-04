@@ -8,7 +8,7 @@ namespace dotnetcoreapi.cake.shop.application
         public CategoryProfile()
         {
 
-            CreateMap<Category, CategoryResponseDto>();
+            CreateMap<Category, CategoryDto>();
             CreateMap<CategoryRequestDto, Category>()
                 .ForMember(
                     dest => dest.CreateAt,

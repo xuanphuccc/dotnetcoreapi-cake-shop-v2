@@ -1,28 +1,45 @@
 ﻿
 namespace dotnetcoreapi.cake.shop.application
 {
-    public interface IOrderService
+    public interface IOrderService : IBaseService<OrderDto, OrderRequestDto, OrderRequestDto>
     {
-        // Get all orders response DTO
-        Task<ResponseDto> GetAllOrders(
+        
+        /// <summary>
+        /// Tìm kiếm, phân trang, sắp xếp
+        /// </summary>
+        /// <param name="status">Trạng thái đơn hàng</param>
+        /// <param name="pageSize">Kích thước trang</param>
+        /// <param name="page">Trang hiện tại</param>
+        /// <param name="sort">Kiểu sắp xếp</param>
+        /// <param name="search">Tìm kiếm</param>
+        /// <returns></returns>
+        Task<ResponseDto> FilterAsync(
             int? status = null,
             int? pageSize = null,
             int? page = null,
             string? sort = null,
             string? search = null);
 
-        // Get order response DTO
-        Task<OrderResponseDto> GetOrderById(int orderId);
+        
+        /// <summary>
+        /// Chuyển trạng thái sang Đang vận chuyển
+        /// </summary>
+        /// <param name="orderId">ID đơn hàng</param>
+        /// <returns></returns>
+        Task<OrderDto> DeliveryOrder(int orderId);
 
-        // Create order
-        Task<OrderResponseDto> CreateOrder(OrderRequestDto orderRequestDto);
+        /// <summary>
+        /// Chuyển trạng thái sang Đã huỷ đơn hàng
+        /// </summary>
+        /// <param name="orderId">ID đơn hàng</param>
+        /// <returns></returns>
+        Task<OrderDto> CancelOrder(int orderId);
 
-        // Update order status
-        Task<OrderResponseDto> DeliveryOrder(int orderId);
-        Task<OrderResponseDto> CancelOrder(int orderId);
-        Task<OrderResponseDto> SuccessOrder(int orderId);
-
-        // Delete order
-        Task<OrderResponseDto> DeleteOrder(int orderId);
+        /// <summary>
+        /// Chuyển trạng thái sang Đã hoàn thành
+        /// </summary>
+        /// <param name="orderId">ID đơn hàng</param>
+        /// <returns></returns>
+        Task<OrderDto> SuccessOrder(int orderId);
     }
 }

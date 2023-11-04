@@ -2,7 +2,7 @@
 
 namespace dotnetcoreapi.cake.shop.application
 {
-    public class OrderItemResponseDto
+    public class OrderItemDto
     {
         public int OrderItemId { get; set; }
 
@@ -15,6 +15,6 @@ namespace dotnetcoreapi.cake.shop.application
         [StringLength(200)]
         public string? Wishes { get; set; }
 
-        public ProductResponseDto? Product { get; set; }
+        public ProductDto? Product { get; set; }
     }
 }

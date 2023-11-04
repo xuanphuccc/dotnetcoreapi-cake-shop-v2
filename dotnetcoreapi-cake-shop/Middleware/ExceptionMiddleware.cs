@@ -21,7 +21,6 @@ namespace dotnetcoreapi.cake.shop
         /// Bắt exception trong pipeline
         /// </summary>
         /// <param name="context">HttpContext</param>
-        /// CreatedBy: txphuc (14/07/2023)
         public async Task InvokeAsync(HttpContext context)
         {
             try
@@ -39,7 +38,6 @@ namespace dotnetcoreapi.cake.shop
         /// </summary>
         /// <param name="context">HttpContext</param>
         /// <param name="exception">Exception</param>
-        /// CreatedBy: txphuc (14/07/2023)
         private async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
             context.Response.ContentType = "application/json";

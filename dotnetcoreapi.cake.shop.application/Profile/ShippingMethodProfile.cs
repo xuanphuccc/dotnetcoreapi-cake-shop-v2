@@ -7,7 +7,7 @@ namespace dotnetcoreapi.cake.shop.application
     {
         public ShippingMethodProfile()
         {
-            CreateMap<ShippingMethod, ShippingMethodResponseDto>();
+            CreateMap<ShippingMethod, ShippingMethodDto>();
             CreateMap<ShippingMethodRequestDto, ShippingMethod>()
                 .ForMember(
                     dest => dest.CreateAt,

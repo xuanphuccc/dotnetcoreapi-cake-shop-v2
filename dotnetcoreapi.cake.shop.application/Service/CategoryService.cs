@@ -4,85 +4,60 @@ using Microsoft.EntityFrameworkCore;
 
 namespace dotnetcoreapi.cake.shop.application
 {
-    public class CategoryService : ICategoryService
+    public class CategoryService : BaseService<Category, CategoryDto, CategoryRequestDto, CategoryRequestDto>, ICategoryService
     {
         private readonly ICategoryRepository _categoryRepository;
-        private readonly IMapper _mapper;
-        public CategoryService(ICategoryRepository categoryRepository, IMapper mapper)
+        public CategoryService(ICategoryRepository categoryRepository, IMapper mapper) : base(categoryRepository, mapper)
         {
             _categoryRepository = categoryRepository;
-            _mapper = mapper;
         }
 
-        // Get all categories response DTO
-        public async Task<List<CategoryResponseDto>> GetAllCategories(int? limit = null)
+        /// <summary>
+        /// Filter
+        /// </summary>
+        /// <param name="limit">Giới hạn bản ghi</param>
+        /// <returns></returns>
+        public async Task<List<CategoryDto>> FilterAsync(int? limit = null)
         {
             var allCategoriesQuery = _categoryRepository.GetAllEntities();
 
             // Get limit categories
-            if(limit.HasValue)
+            if (limit.HasValue)
             {
                 allCategoriesQuery = allCategoriesQuery.Take(limit.Value);
             }
 
             var allCategories = await allCategoriesQuery.ToListAsync();
-            var allCategoryResponseDtos = _mapper.Map<List<CategoryResponseDto>>(allCategories);
+            var allCategoryResponseDtos = _mapper.Map<List<CategoryDto>>(allCategories);
 
             return allCategoryResponseDtos;
         }
 
-        // Get category response DTO
-        public async Task<CategoryResponseDto> GetCategoryById(int categoryId)
-        {
-            var category = await _categoryRepository.GetEntityByIdAsync(categoryId);
-
-            var categoryResponseDto = _mapper.Map<CategoryResponseDto>(category);
-            return categoryResponseDto;
-        }
-
-        // Create category
-        public async Task<CategoryResponseDto> CreateCategory(CategoryRequestDto categoryRequestDto)
+        /// <summary>
+        /// Map DTO sang entity để thêm bản ghi
+        /// </summary>
+        /// <param name="categoryRequestDto">Đối tượng cần map</param>
+        /// <returns></returns>
+        protected override async Task<Category> MapCreateAsync(CategoryRequestDto categoryRequestDto)
         {
             var newCategory = _mapper.Map<Category>(categoryRequestDto);
             newCategory.CreateAt = DateTime.UtcNow;
 
-            var createdCategory = await _categoryRepository.CreateEntityAsync(newCategory);
-
-            var createdCategoryResponseDto = _mapper.Map<CategoryResponseDto>(createdCategory);
-            return createdCategoryResponseDto;
+            return await Task.FromResult(newCategory);
         }
 
-        // Update category
-        public async Task<CategoryResponseDto> UpdateCategory(int id, CategoryRequestDto categoryRequestDto)
+        /// <summary>
+        /// Map DTO sang entity để cập nhật bản ghi
+        /// </summary>
+        /// <param name="entityUpdateDto">Đối tượng cần map</param>
+        /// <returns></returns>
+        protected override async Task<Category> MapUpdateAsync(int entityId, CategoryRequestDto entityUpdateDto)
         {
-            var existCategory = await _categoryRepository.GetEntityByIdAsync(id);
+            var existCategory = await _categoryRepository.GetEntityByIdAsync(entityId);
 
-            if (existCategory == null)
-            {
-                throw new Exception("category not found");
-            }
+            _mapper.Map(entityUpdateDto, existCategory);
 
-            _mapper.Map(categoryRequestDto, existCategory);
-            var updatedCategory = await _categoryRepository.UpdateEntityAsync(existCategory);
-
-            var updatedCategoryResponseDto = _mapper.Map<CategoryResponseDto>(updatedCategory);
-            return updatedCategoryResponseDto;
-        }
-
-        // Delete category
-        public async Task<CategoryResponseDto> DeleteCategory(int categoryId)
-        {
-            var category = await _categoryRepository.GetEntityByIdAsync(categoryId);
-
-            if (category == null)
-            {
-                throw new Exception("category not found");
-            }
-
-            var deletedCategory = await _categoryRepository.DeleteEntityAsync(category);
-
-            var deletedCategoryResponseDto = _mapper.Map<CategoryResponseDto>(deletedCategory);
-            return deletedCategoryResponseDto;
+            return existCategory;
         }
     }
 }

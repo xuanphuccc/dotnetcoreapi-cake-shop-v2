@@ -1,21 +1,13 @@
 ﻿
 namespace dotnetcoreapi.cake.shop.domain
 {
-    public interface IProductRepository
+    public interface IProductRepository : IBaseRepository<Product>
     {
-        // Get all products
-        IQueryable<Product> GetAllProducts();
-
-        // Get product by id
-        Task<Product> GetProductById(int productId);
-
-        // Create product
-        Task<Product> CreateProduct(Product product);
-
-        // Update product
-        Task<Product> UpdateProduct(Product product);
-
-        // Delete product
-        Task<Product> DeleteProduct(Product product);
+        /// <summary>
+        /// Kiểm tra một sản phẩm đã từng được bán chưa
+        /// </summary>
+        /// <param name="productId">ID sản phẩm</param>
+        /// <returns></returns>
+        Task<int> HasOrders(int productId);
     }
 }

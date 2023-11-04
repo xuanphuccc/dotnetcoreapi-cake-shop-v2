@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace dotnetcoreapi.cake.shop.infrastructure
 {
-    public class BaseRepository<TEntity> : BaseReadOnlyRepository<TEntity>, IBaseRepository<TEntity> where TEntity : class
+    public abstract class BaseRepository<TEntity> : BaseReadOnlyRepository<TEntity>, IBaseRepository<TEntity> where TEntity : class
     {
         #region Constructors
         public BaseRepository(CakeShopContext context) : base(context)

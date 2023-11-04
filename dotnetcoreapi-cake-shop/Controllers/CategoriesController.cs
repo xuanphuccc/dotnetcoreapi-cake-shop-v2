@@ -17,7 +17,7 @@ namespace dotnetcoreapi.cake.shop
         [HttpGet]
         public async Task<IActionResult> GetAllCategories([FromQuery] int? limit)
         {
-            var allCategoryResponseDtos = await _categoryService.GetAllCategories(limit);
+            var allCategoryResponseDtos = await _categoryService.FilterAsync(limit);
 
             return Ok(new ResponseDto()
             {
@@ -33,7 +33,7 @@ namespace dotnetcoreapi.cake.shop
                 return BadRequest(new ResponseDto() { Status = 400, Title = "categoryId is required" });
             }
 
-            var categoryResponseDto = await _categoryService.GetCategoryById(id.Value);
+            var categoryResponseDto = await _categoryService.GetEntityByIdAsync(id.Value);
             if (categoryResponseDto == null)
             {
                 return NotFound(new ResponseDto() { Status = 404, Title = "category not found" });
@@ -55,7 +55,7 @@ namespace dotnetcoreapi.cake.shop
 
             try
             {
-                var createdCategoryResponseDto = await _categoryService.CreateCategory(categoryRequestDto);
+                var createdCategoryResponseDto = await _categoryService.CreateEntityAsync(categoryRequestDto);
 
                 return CreatedAtAction(
                     nameof(GetCategoryById),
@@ -86,7 +86,7 @@ namespace dotnetcoreapi.cake.shop
 
             try
             {
-                var updatedCategoryResponseDto = await _categoryService.UpdateCategory(id.Value, categoryRequestDto);
+                var updatedCategoryResponseDto = await _categoryService.UpdateEntityAsync(id.Value, categoryRequestDto);
 
                 return Ok(new ResponseDto()
                 {
@@ -112,7 +112,7 @@ namespace dotnetcoreapi.cake.shop
 
             try
             {
-                var deletedCategoryResponseDto = await _categoryService.DeleteCategory(id.Value);
+                var deletedCategoryResponseDto = await _categoryService.DeleteEntityAsync(id.Value);
 
                 return Ok(new ResponseDto()
                 {
