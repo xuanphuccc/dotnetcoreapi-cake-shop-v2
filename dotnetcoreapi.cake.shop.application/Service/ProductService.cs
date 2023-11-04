@@ -7,10 +7,12 @@ namespace dotnetcoreapi.cake.shop.application
     public class ProductService : BaseService<Product, ProductDto, ProductRequestDto, ProductRequestDto>, IProductService
     {
         private readonly IProductRepository _productRepository;
-        public ProductService(IProductRepository productRepository, IMapper mapper)
+        private readonly ICategoryRepository _categoryRepository;
+        public ProductService(IProductRepository productRepository, IMapper mapper, ICategoryRepository categoryRepository)
             : base(productRepository, mapper)
         {
             _productRepository = productRepository;
+            _categoryRepository = categoryRepository;
         }
 
         /// <summary>
@@ -99,6 +101,11 @@ namespace dotnetcoreapi.cake.shop.application
         /// <returns></returns>
         protected override async Task<Product> MapCreateAsync(ProductRequestDto entityCreateDto)
         {
+            if(entityCreateDto.CategoryId != null)
+            {
+                await _categoryRepository.GetEntityByIdAsync(entityCreateDto.CategoryId.Value);
+            }
+
             var newProduct = _mapper.Map<Product>(entityCreateDto);
             newProduct.CreateAt = DateTime.UtcNow;
 
@@ -112,6 +119,11 @@ namespace dotnetcoreapi.cake.shop.application
         /// <returns></returns>
         protected override async Task<Product> MapUpdateAsync(int entityId, ProductRequestDto entityUpdateDto)
         {
+            if (entityUpdateDto.CategoryId != null)
+            {
+                await _categoryRepository.GetEntityByIdAsync(entityUpdateDto.CategoryId.Value);
+            }
+
             var existProduct = await _productRepository.GetEntityByIdAsync(entityId);
 
             _mapper.Map(entityUpdateDto, existProduct);

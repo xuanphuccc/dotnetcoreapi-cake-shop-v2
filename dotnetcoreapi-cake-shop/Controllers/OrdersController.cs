@@ -15,172 +15,91 @@ namespace dotnetcoreapi.cake.shop
             _orderService = orderService;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAllOrders(
+        /// <summary>
+        /// Tìm kiếm, phân trang
+        /// </summary>
+        /// <param name="status"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="page"></param>
+        /// <param name="sort"></param>
+        /// <param name="search"></param>
+        /// <returns></returns>
+        [HttpGet("filter")]
+        public async Task<IActionResult> FilterAsync(
             [FromQuery] int? status,
             [FromQuery] int? pageSize,
             [FromQuery] int? page,
             [FromQuery] string? sort,
             [FromQuery] string? search)
         {
-            try
-            {
-                // Get all orders
-                var allOrderResponseDtos = await _orderService.FilterAsync(status, pageSize, page, sort, search);
+            var allOrderResponseDtos = await _orderService.FilterAsync(status, pageSize, page, sort, search);
 
-                return Ok(allOrderResponseDtos);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(
-                    StatusCodes.Status500InternalServerError,
-                    new ResponseDto() { Status = 500, Title = ex.Message }
-                );
-            }
+            return Ok(allOrderResponseDtos);
         }
 
+        /// <summary>
+        /// Lấy đơn hàng theo ID
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id}")]
         public async Task<IActionResult> GetOrder([FromRoute] int? id)
         {
-            if (!id.HasValue)
-            {
-                return BadRequest(new ResponseDto() { Status = 400, Title = "orderId is required" });
-            }
+            var orderResponseDto = await _orderService.GetEntityByIdAsync(id.Value);
 
-            try
-            {
-                // Get order
-                var orderResponseDto = await _orderService.GetEntityByIdAsync(id.Value);
-                if (orderResponseDto == null)
-                {
-                    return NotFound(new ResponseDto() { Status = 404, Title = "order not found" });
-                }
-
-                return Ok(new ResponseDto()
-                {
-                    Data = orderResponseDto
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(
-                    StatusCodes.Status500InternalServerError,
-                    new ResponseDto() { Status = 500, Title = ex.Message }
-                );
-            }
+            return Ok(new ResponseDto() { Data = orderResponseDto });
         }
 
+        /// <summary>
+        /// Thêm mới đơn hàng
+        /// </summary>
+        /// <param name="orderRequestDto"></param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<IActionResult> CreateOrder([FromBody] OrderRequestDto orderRequestDto)
         {
-            if (orderRequestDto == null)
-            {
-                return BadRequest(new ResponseDto() { Status = 400, Title = "order is required" });
-            }
+            var result = await _orderService.CreateEntityAsync(orderRequestDto);
 
-            try
-            {
-                // Create order
-                var createdOrderResponseDto = await _orderService.CreateEntityAsync(orderRequestDto);
-
-                return CreatedAtAction(
-                    nameof(GetOrder),
-                    new { id = createdOrderResponseDto.OrderId },
-                    new ResponseDto()
-                    {
-                        Data = createdOrderResponseDto,
-                        Status = 201,
-                    }
-                );
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(
-                    StatusCodes.Status500InternalServerError,
-                    new ResponseDto() { Status = 500, Title = ex.Message }
-                );
-            }
+            return StatusCode(StatusCodes.Status201Created, new ResponseDto() { Data = result });
         }
 
+        /// <summary>
+        /// Chuyển trạng thái sang Đang giao hàng
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpPut("delivery/{id}")]
-        public async Task<IActionResult> DeliveryOrder([FromRoute] int? id)
+        public async Task<IActionResult> DeliveryOrder([FromRoute] int id)
         {
-            if (!id.HasValue)
-            {
-                return BadRequest(new ResponseDto() { Status = 400, Title = "orderId is required" });
-            }
+            var result = await _orderService.DeliveryOrder(id);
 
-            try
-            {
-                // Delivery order
-                var updatedOrderResponseDto = await _orderService.DeliveryOrder(id.Value);
-
-                return Ok(new ResponseDto()
-                {
-                    Data = updatedOrderResponseDto
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(
-                    StatusCodes.Status500InternalServerError,
-                    new ResponseDto() { Status = 500, Title = ex.Message }
-                );
-            }
+            return Ok(new ResponseDto() { Data = result });
         }
 
+        /// <summary>
+        /// Chuyển trạng thái sang Đã hoàn thành
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpPut("complete/{id}")]
-        public async Task<IActionResult> CompleteOrder([FromRoute] int? id)
+        public async Task<IActionResult> CompleteOrder([FromRoute] int id)
         {
-            if (!id.HasValue)
-            {
-                return BadRequest(new ResponseDto() { Status = 400, Title = "orderId is required" });
-            }
+            var result = await _orderService.SuccessOrder(id);
 
-            try
-            {
-                // Complete order
-                var updatedOrderResponseDto = await _orderService.SuccessOrder(id.Value);
-
-                return Ok(new ResponseDto()
-                {
-                    Data = updatedOrderResponseDto
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(
-                    StatusCodes.Status500InternalServerError,
-                    new ResponseDto() { Status = 500, Title = ex.Message }
-                );
-            }
+            return Ok(new ResponseDto() { Data = result });
         }
 
+        /// <summary>
+        /// Chuyển trạng thái sang Đã huỷ đơn hàng
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpPut("cancel/{id}")]
-        public async Task<IActionResult> CancelOrder([FromRoute] int? id)
+        public async Task<IActionResult> CancelOrder([FromRoute] int id)
         {
-            if (!id.HasValue)
-            {
-                return BadRequest(new ResponseDto() { Status = 400, Title = "orderId is required" });
-            }
+            var result = await _orderService.CancelOrder(id);
 
-            try
-            {
-                // Cancel order
-                var updatedOrderResponseDto = await _orderService.CancelOrder(id.Value);
-
-                return Ok(new ResponseDto()
-                {
-                    Data = updatedOrderResponseDto
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(
-                    StatusCodes.Status500InternalServerError,
-                    new ResponseDto() { Status = 500, Title = ex.Message }
-                );
-            }
+            return Ok(new ResponseDto() { Data = result });
         }
     }
 }

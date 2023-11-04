@@ -29,7 +29,7 @@ namespace dotnetcoreapi.cake.shop
         {
             var result = await _baseService.CreateEntityAsync(entityCreateDto);
 
-            return StatusCode(StatusCodes.Status201Created, result);
+            return StatusCode(StatusCodes.Status201Created, new ResponseDto() { Data = result });
         }
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace dotnetcoreapi.cake.shop
         {
             var result = await _baseService.UpdateEntityAsync(id, entityUpdateDto);
 
-            return Ok(result);
+            return Ok(new ResponseDto() { Data = result });
         }
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace dotnetcoreapi.cake.shop
         {
             var result = await _baseService.DeleteEntityAsync(id);
 
-            return Ok(result);
+            return Ok(new ResponseDto() { Data = result });
         }
         #endregion
     }

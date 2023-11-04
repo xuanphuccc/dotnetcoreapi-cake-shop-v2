@@ -28,7 +28,7 @@ namespace dotnetcoreapi.cake.shop
         {
             var entityDtos = await _baseReadOnlyService.GetAllEntitiesAsync();
 
-            return Ok(entityDtos);
+            return Ok(new ResponseDto() { Data = entityDtos });
         }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace dotnetcoreapi.cake.shop
         {
             var entityDto = await _baseReadOnlyService.GetEntityByIdAsync(id);
 
-            return Ok(entityDto);
+            return Ok(new ResponseDto() { Data = entityDto });
         }
         #endregion
     }
