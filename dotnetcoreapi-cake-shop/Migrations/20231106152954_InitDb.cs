@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace dotnetcoreapi_cake_shop.Migrations
+namespace dotnetcoreapi.cake.shop.Migrations
 {
-    public partial class init : Migration
+    public partial class InitDb : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -16,27 +16,14 @@ namespace dotnetcoreapi_cake_shop.Migrations
                     CategoryId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "ntext", nullable: true),
-                    Image = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: true),
+                    Image = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: false),
                     CreateAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Categories", x => x.CategoryId);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "OrderStatuses",
-                columns: table => new
-                {
-                    OrderStatusId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_OrderStatuses", x => x.OrderStatusId);
                 });
 
             migrationBuilder.CreateTable(
@@ -46,8 +33,9 @@ namespace dotnetcoreapi_cake_shop.Migrations
                     ShippingMethodId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    PricePerKm = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    InitialCharge = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    InitialDistance = table.Column<double>(type: "float", nullable: false),
+                    AdditionalCharge = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Logo = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: true),
                     IsDefault = table.Column<bool>(type: "bit", nullable: false),
                     CreateAt = table.Column<DateTime>(type: "datetime2", nullable: true)
@@ -65,11 +53,11 @@ namespace dotnetcoreapi_cake_shop.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Ingredients = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "ntext", nullable: true),
                     Taste = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Texture = table.Column<string>(type: "ntext", nullable: true),
-                    Size = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Size = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     Accessories = table.Column<string>(type: "ntext", nullable: true),
                     Instructions = table.Column<string>(type: "ntext", nullable: true),
                     IsDisplay = table.Column<bool>(type: "bit", nullable: false),
@@ -111,12 +99,6 @@ namespace dotnetcoreapi_cake_shop.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Orders", x => x.OrderId);
-                    table.ForeignKey(
-                        name: "FK_Orders_OrderStatuses_OrderStatusId",
-                        column: x => x.OrderStatusId,
-                        principalTable: "OrderStatuses",
-                        principalColumn: "OrderStatusId",
-                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_Orders_ShippingMethods_ShippingMethodId",
                         column: x => x.ShippingMethodId,
@@ -187,11 +169,6 @@ namespace dotnetcoreapi_cake_shop.Migrations
                 filter: "[ProductId] IS NOT NULL AND [OrderId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Orders_OrderStatusId",
-                table: "Orders",
-                column: "OrderStatusId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Orders_ShippingMethodId",
                 table: "Orders",
                 column: "ShippingMethodId");
@@ -220,9 +197,6 @@ namespace dotnetcoreapi_cake_shop.Migrations
 
             migrationBuilder.DropTable(
                 name: "Products");
-
-            migrationBuilder.DropTable(
-                name: "OrderStatuses");
 
             migrationBuilder.DropTable(
                 name: "ShippingMethods");

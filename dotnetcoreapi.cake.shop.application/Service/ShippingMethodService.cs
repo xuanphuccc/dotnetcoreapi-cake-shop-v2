@@ -60,7 +60,10 @@ namespace dotnetcoreapi.cake.shop.application
             {
                 // Update old default shipping methods to 'false'
                 await UpdateOldDefaultShippingMethods();
+
+                existShippingMethod.IsDefault = true;
             }
+
 
             return existShippingMethod;
         }
