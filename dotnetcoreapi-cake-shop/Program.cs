@@ -49,6 +49,7 @@ builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IShippingMethodRepository, ShippingMethodRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IReportRepository, ReportRepository>();
 
 // Add services
 builder.Services.AddScoped<ICategoryService, CategoryService>();

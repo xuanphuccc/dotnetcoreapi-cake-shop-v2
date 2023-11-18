@@ -95,6 +95,23 @@ namespace dotnetcoreapi.cake.shop.application
         }
 
         /// <summary>
+        /// Lấy một bản ghi theo ID
+        /// </summary>
+        /// <param name="entityId">ID của bản ghi</param>
+        /// <returns></returns>
+        public override async Task<ProductDto> GetEntityByIdAsync(int entityId)
+        {
+            var entity = await _baseReadOnlyRepository.GetEntityByIdAsync(entityId);
+
+            var entityDto = _mapper.Map<ProductDto>(entity);
+
+            var hasOrders = await _productRepository.HasOrders(entityId);
+            entityDto.HasOrders = hasOrders;
+
+            return entityDto;
+        }
+
+        /// <summary>
         /// Map DTO sang entity để thêm bản ghi
         /// </summary>
         /// <param name="entityCreateDto">Đối tượng cần map</param>
