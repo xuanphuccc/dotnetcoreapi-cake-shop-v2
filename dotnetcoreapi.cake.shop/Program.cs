@@ -38,7 +38,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<CakeShopContext>(options =>
 {
     string connectionString = builder.Configuration.GetConnectionString("CakeShopContext");
-    options.UseSqlServer(connectionString, b => b.MigrationsAssembly("dotnetcoreapi.cake.shop"));
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
 });
 
 // Add auto mapper

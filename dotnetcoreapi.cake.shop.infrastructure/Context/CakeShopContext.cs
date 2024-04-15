@@ -1,10 +1,11 @@
 ﻿using dotnetcoreapi.cake.shop.domain;
+using dotnetcoreapi.cake.shop.infrastructure;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
 
 namespace dotnetcoreapi.cake.shop.infrastructure
 {
-    public class CakeShopContext : DbContext
+    public class CakeShopContext : DbContext, IApplicationDbContext
     {
         public CakeShopContext(DbContextOptions options) : base(options)
         {

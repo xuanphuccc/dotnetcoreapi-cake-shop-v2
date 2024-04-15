@@ -16,7 +16,7 @@ namespace dotnetcoreapi.cake.shop.domain
         [StringLength(100)]
         public string Title { get; set; } = string.Empty;
 
-        [Column(TypeName = "ntext")]
+        [Column(TypeName = "text")]
         public string? Description { get; set; }
 
         [Required]

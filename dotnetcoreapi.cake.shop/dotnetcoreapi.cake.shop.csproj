@@ -21,4 +21,8 @@
     <ProjectReference Include="..\dotnetcoreapi.cake.shop.infrastructure\dotnetcoreapi.cake.shop.infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Migrations\" />
+  </ItemGroup>
+
 </Project>
